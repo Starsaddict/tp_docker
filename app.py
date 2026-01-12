@@ -1,5 +1,5 @@
 import os
-from flask import Flask
+from flask import Flask, jsonify
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 
@@ -31,6 +31,17 @@ def insert():
 	col = db["test"]
 	res = col.insert_one({"msg":"hello from flask"})
 	return f"Inserted:{res.inserted_id}"
+
+@app.get("/read")
+def read():
+	client = mongo_client()
+	db = client["tp_docker"]
+	col = db["test"]
+	docs = []
+	for d in col.find().limit(50):
+		d["_id"] = str(d.get("_id"))
+		docs.append(d)
+	return jsonify(docs)
 
 if __name__ == "__main__":
 	app.run(host="0.0.0.0",port=5000,debug=False)
